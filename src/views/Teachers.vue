@@ -23,7 +23,12 @@
               v-model="filter"
               placeholder="Pesquisar">
               <template v-slot:append>
-                <q-icon name="search" />
+                <q-btn
+                  flat
+                  dense
+                  @click="getAllTeachers"
+                  icon="search"
+                  />
               </template>
             </q-input>
 
@@ -39,7 +44,8 @@
         <template v-slot:body="props">
           <q-tr
             :props="props"
-            :class="props.row.status === 'Inativo' ? 'bg-red-2' : ''"
+            :class="props.row.statusView === 'Inativo' ? 'bg-red-2' : ''"
+            @click="getLine(props.row)"
           >
             <q-td
               v-for="(coluna) in columns"
@@ -55,15 +61,168 @@
 
       </q-table>
     </div>
+
+    <q-dialog v-model="dialogTeacher" persistent>
+      <q-card class="row">
+        <q-card-section class="row col-12">
+          <div class="text-h6">{{teacher.id ? 'Deseja atualizar as informações?' : 'Cadastrando professor'}}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="col-12 q-pt-none">
+          <q-form
+            class="row q-col-gutter-sm"
+          >
+            <div class="col-6">
+              <q-input
+                outlined
+                dense
+                v-model="teacher.name"
+                label="Informe seu nome"
+                hide-bottom-space
+                lazy-rules
+                :rules="[ val => val && val.length > 0 || 'Por favor informe seu nome']"
+              />
+
+            </div>
+
+            <div class="col-6">
+              <q-input
+                outlined
+                dense
+                v-model="teacher.email"
+                label="Informe seu e-mail"
+                hide-bottom-space
+                lazy-rules
+                :rules="[ val => val && val.length > 0 || 'Por favor informe seu e-mail']"
+              />
+            </div>
+
+            <div class="col-12">
+              <q-select
+                label="Informe as disciplinas"
+                outlined
+                dense
+                v-model="teacher.subjects"
+                :options="optionsSubjects"
+                use-input
+                use-chips
+                multiple
+                input-debounce="0"
+                new-value-mode="add-unique"
+                hint="Precione enter para cadastrar a disciplina"
+              />
+            </div>
+
+            <div class="col-12">
+              <q-checkbox label="Status" v-model="teacher.status" />
+            </div>
+
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions class="col-12" align="right">
+          <q-btn
+            flat
+            :label="teacher.id ? 'Não' : 'Cancelar'"
+            color="secondary"
+            v-close-popup
+          />
+          <q-btn
+            flat
+            :label="teacher.id ? 'Sim, atualizar informações' : 'Cadastrar'"
+            color="primary"
+            @click="teacher.id ? updateTeacher() : createTeacher()"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
+import Teachers from '../services/Teachers'
+import Subjects from '../services/Subjects'
+import { Notify } from 'quasar'
+
 export default {
+  mounted () {
+    this.getAllTeachers()
+  },
+  methods: {
+    getAllTeachers () {
+      Teachers.getAllTeachers()
+        .then((result) => {
+          this.data = result.data.teachers.map((teacher) => ({
+            id: teacher._id,
+            name: teacher.name,
+            email: teacher.email,
+            status: teacher.status,
+            statusView: teacher.status ? 'Ativo' : 'Inativo',
+            subjects: teacher.subjects.map((subject) => (subject.title)),
+            subjectsLength: teacher.subjects.length
+          }))
+        })
+        .finally(() => {
+
+        })
+    },
+    updateTeacher () {
+      Teachers.updateTeacher(this.teacher.id, this.teacher)
+        .then((result) => {
+          Notify.create({
+            progress: true,
+            color: 'positive',
+            message: 'Dados atualizados com sucesso',
+            icon: 'thumb_up_alt',
+            actions: [{
+              color: 'white',
+              icon: 'close'
+            }]
+          })
+
+          this.dialogTeacher = false
+        })
+        .finally(() => {
+          this.getAllTeachers()
+        })
+    },
+    getLine (teacher) {
+      this.getAllSubjects()
+
+      this.teacher = {
+        id: teacher.id,
+        name: teacher.name,
+        email: teacher.email,
+        status: teacher.status,
+        subjects: teacher.subjects
+      }
+
+      this.dialogTeacher = true
+    },
+    getAllSubjects () {
+      const query = {
+        status: true
+      }
+      Subjects.getAllSubjects(query)
+        .then((result) => {
+          this.optionsSubjects = result.data.subjects.map((subject) => (subject.title))
+        })
+    }
+  },
   name: 'Teachers',
   data () {
     return {
+      dialogTeacher: false,
       filter: '',
+      teacher: {
+        id: null,
+        name: '',
+        email: '',
+        status: true,
+        subjects: []
+      },
       columns: [
         {
           name: 'name',
@@ -82,75 +241,22 @@ export default {
           sortable: true
         },
         {
-          name: 'subjects',
+          name: 'subjectsLength',
           align: 'center',
           label: 'Disciplinas',
-          field: 'subjects',
+          field: 'subjectsLength',
+          sortable: true
+        },
+        {
+          name: 'statusView',
+          align: 'center',
+          label: 'Status',
+          field: 'statusView',
           sortable: true
         }
       ],
-      data: [
-        {
-          name: 'Frozen Yogurt',
-          email: 159,
-          status: 'Inativo',
-          subjects: 2
-        },
-        {
-          name: 'Ice cream sandwich',
-          email: 237,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Eclair',
-          email: 262,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Cupcake',
-          email: 305,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Gingerbread',
-          email: 356,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Jelly bean',
-          email: 375,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Lollipop',
-          email: 392,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Honeycomb',
-          email: 408,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'Donut',
-          email: 452,
-          status: 'Ativo',
-          subjects: 2
-        },
-        {
-          name: 'KitKat',
-          email: 518,
-          status: 'Ativo',
-          subjects: 2
-        }
-      ]
+      data: [],
+      optionsSubjects: []
     }
   }
 }

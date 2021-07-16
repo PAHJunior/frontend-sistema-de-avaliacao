@@ -39,7 +39,8 @@
         <template v-slot:body="props">
           <q-tr
             :props="props"
-            :class="props.row.status === 'Inativo' ? 'bg-red-2' : ''"
+            :class="props.row.statusView === 'Inativo' ? 'bg-red-2' : ''"
+            @click="getLine(props.row)"
           >
             <q-td
               v-for="(coluna) in columns"
@@ -55,15 +56,115 @@
 
       </q-table>
     </div>
+
+    <q-dialog v-model="dialogSubject" persistent>
+      <q-card class="row">
+        <q-card-section class="row col-12">
+          <div class="text-h6">{{subject.id ? 'Deseja atualizar as informações?' : 'Cadastrando professor'}}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="col-12 q-pt-none">
+          <q-form
+            class="row q-col-gutter-sm"
+          >
+            <div class="col-9">
+              <q-input
+                outlined
+                dense
+                v-model="subject.title"
+                label="Informe o titulo da disciplina"
+                hide-bottom-space
+                lazy-rules
+                :rules="[ val => val && val.length > 0 || 'Por favor informe seu nome']"
+              />
+            </div>
+
+            <div class="col-3">
+              <q-checkbox label="Status" v-model="subject.status" />
+            </div>
+
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions class="col-12" align="right">
+          <q-btn
+            flat
+            :label="subject.id ? 'Não' : 'Cancelar'"
+            color="secondary"
+            v-close-popup
+          />
+          <q-btn
+            flat
+            :label="subject.id ? 'Sim, atualizar informações' : 'Cadastrar'"
+            color="primary"
+            @click="subject.id ? updateSubject() : createSubject()"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
+import Subjects from '../services/Subjects'
+import { Notify } from 'quasar'
+
 export default {
+  mounted () {
+    this.getAllSubjects()
+  },
+  methods: {
+    getAllSubjects () {
+      Subjects.getAllSubjects()
+        .then((result) => {
+          this.data = result.data.subjects.map((subject) => ({
+            id: subject._id,
+            title: subject.title,
+            statusView: subject.status ? 'Ativo' : 'Inativo',
+            status: subject.status
+          }))
+        })
+    },
+    updateSubject () {
+      Subjects.updateSubject(this.subject.id, this.subject)
+        .then((result) => {
+          Notify.create({
+            progress: true,
+            color: 'positive',
+            message: 'Dados atualizados com sucesso',
+            icon: 'thumb_up_alt',
+            actions: [{
+              color: 'white',
+              icon: 'close'
+            }]
+          })
+        })
+        .finally(() => {
+          this.getAllSubjects()
+        })
+    },
+    getLine (subject) {
+      this.subject = {
+        id: subject.id,
+        title: subject.title,
+        status: subject.status
+      }
+
+      this.dialogSubject = true
+    }
+  },
   name: 'Subjects',
   data () {
     return {
       filter: '',
+      dialogSubject: false,
+      subject: {
+        id: null,
+        title: '',
+        status: true
+      },
       columns: [
         {
           name: 'title',
@@ -75,72 +176,14 @@ export default {
           sortable: true
         },
         {
-          name: 'subtitle',
-          align: 'center',
-          label: 'Sub Título',
-          field: 'subtitle',
-          sortable: true
-        },
-        {
-          name: 'status',
+          name: 'statusView',
           align: 'center',
           label: 'Status',
-          field: 'status',
+          field: 'statusView',
           sortable: true
         }
       ],
-      data: [
-        {
-          title: 'Frozen Yogurt',
-          subtitle: 159,
-          status: 'Inativo'
-        },
-        {
-          title: 'Ice cream sandwich',
-          subtitle: 237,
-          status: 'Ativo'
-        },
-        {
-          title: 'Eclair',
-          subtitle: 262,
-          status: 'Ativo'
-        },
-        {
-          title: 'Cupcake',
-          subtitle: 305,
-          status: 'Ativo'
-        },
-        {
-          title: 'Gingerbread',
-          subtitle: 356,
-          status: 'Ativo'
-        },
-        {
-          title: 'Jelly bean',
-          subtitle: 375,
-          status: 'Ativo'
-        },
-        {
-          title: 'Lollipop',
-          subtitle: 392,
-          status: 'Ativo'
-        },
-        {
-          title: 'Honeycomb',
-          subtitle: 408,
-          status: 'Ativo'
-        },
-        {
-          title: 'Donut',
-          subtitle: 452,
-          status: 'Ativo'
-        },
-        {
-          title: 'KitKat',
-          subtitle: 518,
-          status: 'Ativo'
-        }
-      ]
+      data: []
     }
   }
 }

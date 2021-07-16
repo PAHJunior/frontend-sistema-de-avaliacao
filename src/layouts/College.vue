@@ -17,8 +17,6 @@
           <q-item
             clickable
             v-ripple
-            :active="link === ''"
-            @click="openPage('')"
             active-class="bg-primary text-white"
           >
             <q-item-section avatar>
@@ -33,8 +31,7 @@
           <q-item
             clickable
             v-ripple
-            :active="link === 'subjects'"
-            @click="openPage('subjects')"
+            to="/college/subjects"
             active-class="bg-primary text-white"
           >
             <q-item-section avatar>
@@ -47,8 +44,7 @@
           <q-item
             clickable
             v-ripple
-            :active="link === 'teachers'"
-            @click="openPage('teachers')"
+            to="/college/teachers"
             active-class="bg-primary text-white"
           >
             <q-item-section avatar>
@@ -61,8 +57,7 @@
           <q-item
             clickable
             v-ripple
-            :active="link === 'students'"
-            @click="openPage('students')"
+            to="/college/students"
             active-class="bg-primary text-white"
           >
             <q-item-section avatar>
@@ -75,8 +70,7 @@
           <q-item
             clickable
             v-ripple
-            :active="link === 'exams'"
-            @click="openPage('exams')"
+            to="/college/exams"
             active-class="bg-primary text-white"
           >
             <q-item-section avatar>
