@@ -4,10 +4,10 @@
     <q-page-container>
       <q-page padding class="row content-center">
         <div class="row">
-          <div class="col-8" style="height: 450px">
+          <div class="col-md-8" style="height: 450px">
             <h2 class="col-12 text-h2">Faça login para acessar sua conta</h2>
           </div>
-          <div class="row col-4 justify-end items-end">
+          <div v-if="!$q.screen.lt.md" class="row col-4 justify-end items-end">
             <img
               class="col-12"
               alt="Vue logo"
@@ -16,7 +16,7 @@
           </div>
 
           <div class="col-12 row q-col-gutter-sm">
-            <div class="row col-6">
+            <div class="row col-md-6 col-12">
               <q-btn
                 flat
                 class="col-12"
@@ -27,7 +27,7 @@
                 @click="dialogLoginStudent = !dialogLoginStudent"
               />
             </div>
-            <div class="row col-6">
+            <div class="row col-md-6 col-12">
               <q-btn
                 flat
                 class="col-12"
@@ -80,6 +80,7 @@
             dense
             hide-bottom-space
             lazy-rules
+            v-on:keyup.enter="loginTeacher()"
             :rules="[ val => val && val.length > 0 || 'Por favor informe sua senha']"
           >
             <template v-slot:append>
@@ -139,6 +140,7 @@
             label="Sua senha"
             dense
             hide-bottom-space
+            v-on:keyup.enter="loginStudent()"
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Por favor informe sua senha']"
           >
@@ -183,7 +185,7 @@ export default {
               .then((result) => {
                 LocalStorage.set('teacher', result.data.teacher)
                 LocalStorage.set('token', result.data.token)
-                this.$router.push('/college/dashboard')
+                this.$router.push('/college/subjects')
               })
           }
         })

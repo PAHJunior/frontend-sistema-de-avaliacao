@@ -234,7 +234,7 @@
 
             <div class="col-12 text-subtitle1">
               <span class="text-bold">Data e hora do inicio:</span>
-              <span> {{ new Date(exam.startAt).getDate() + '/' +new Date(exam.startAt).getMonth()  }}</span>
+              <span> {{ exam.startAtView }}</span>
             </div>
           </div>
           <div>
@@ -365,6 +365,14 @@
             Resultado da prova
           </span>
         </div>
+        <div v-if="exam.startAtView" class="col-12 text-subtitle1">
+          <span class="text-bold">Início:</span>
+          <span> {{ exam.startAtView }}</span>
+        </div>
+        <div v-if="exam.finishAtView" class="col-12 text-subtitle1">
+          <span class="text-bold">Fim:</span>
+          <span> {{ exam.finishAtView }}</span>
+        </div>
         <div class="col-12 text-center">
           <q-circular-progress
             show-value
@@ -446,7 +454,7 @@
 <script>
 import Exams from '../../services/Exams'
 import StudentTest from '../../services/StudentTest'
-import { LocalStorage, Notify } from 'quasar'
+import { LocalStorage, Notify, date } from 'quasar'
 
 export default {
   watch: {
@@ -541,8 +549,8 @@ export default {
     },
     getExamResult (exam) {
       const rightAnswers = []
-      for (const i in this.exam.questions) {
-        const alternatives = this.exam.questions[i].alternatives
+      for (const i in exam.questions) {
+        const alternatives = exam.questions[i].alternatives
         for (const x in alternatives) {
           if ((alternatives[x].isChoice === true) && (alternatives[x].isCorrect === true)) {
             rightAnswers.push(alternatives[x])
@@ -572,6 +580,8 @@ export default {
             questions: exam.questions,
             questionsLength: exam.questions.length,
             startAt: exam.startAt,
+            startAtView: 'S/N',
+            finishAtView: 'S/N',
             finishAt: exam.finishAt
           }))
         })
@@ -600,6 +610,8 @@ export default {
             questions: exam.questions,
             questionsLength: exam.questions.length,
             startAt: exam.startAt,
+            startAtView: date.formatDate(exam.startAt, 'DD-MM-YYYY HH:mm'),
+            finishAtView: date.formatDate(exam.finishAt, 'DD-MM-YYYY HH:mm'),
             finishAt: exam.finishAt
           }))
         })
@@ -628,6 +640,8 @@ export default {
             questions: exam.questions,
             questionsLength: exam.questions.length,
             startAt: exam.startAt,
+            startAtView: date.formatDate(exam.startAt, 'DD-MM-YYYY HH:mm'),
+            finishAtView: date.formatDate(exam.finishAt, 'DD-MM-YYYY HH:mm'),
             finishAt: exam.finishAt
           }))
         })

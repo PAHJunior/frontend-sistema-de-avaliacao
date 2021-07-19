@@ -13,11 +13,11 @@
         :filter="filter"
       >
         <template v-slot:top="props">
-          <div class="col-6 q-table__title">Materias</div>
+          <div class="col-md-6 col-12 q-table__title">Materias</div>
 
-          <div class="col-6 row q-col-gutter-sm">
+          <div class="col-md-6 col-12 row q-col-gutter-sm">
 
-            <div class="row col-6">
+            <div class="row col-12">
               <q-input
                 outlined
                 dense
@@ -36,7 +36,7 @@
               </q-input>
             </div>
 
-            <div class="row col-4">
+            <div class="row col-10">
               <q-btn
                 class="col-12"
                 outline
@@ -101,7 +101,7 @@
             greedy
             class="row q-col-gutter-sm"
           >
-            <div class="col-9">
+            <div class="col-md-9 col-12">
               <q-input
                 outlined
                 ref="subjectTitle"
@@ -114,7 +114,7 @@
               />
             </div>
 
-            <div class="col-3">
+            <div class="col-md-3 col-12">
               <q-checkbox label="Status" v-model="subject.status" />
             </div>
 

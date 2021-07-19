@@ -13,10 +13,10 @@
         :filter="filter"
       >
         <template v-slot:top="props">
-          <div class="col-6 q-table__title">Provas</div>
+          <div class="col-md-6 col-12 q-table__title">Provas</div>
 
-          <div class="col-6 row q-col-gutter-sm">
-            <div class="row col-6">
+          <div class="col-md-6 col-12 row q-col-gutter-sm">
+            <div class="row col-md-6 col-12">
               <q-input
                 outlined
                 dense
@@ -36,7 +36,7 @@
               </q-input>
             </div>
 
-            <div class="row col-4">
+            <div class="row col-md-4 col-10">
               <q-btn
                 class="col-12"
                 outline
@@ -99,21 +99,22 @@
             greedy
             ref="formExam"
           >
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <q-input
                 outlined
                 dense
                 v-model="exam.description"
                 ref="examDescription"
-                label="Titulo da prova *"
+                label="Descrição da prova *"
                 hide-bottom-space
+                class="col-12"
                 lazy-rules
                 :rules="[ val => val && val.length > 0 || 'Por favor informe o titulo da prova']"
               />
 
             </div>
 
-            <div class="col-5">
+            <div class="col-md-5 col-12">
               <q-select
                 label="Informe a materia *"
                 outlined
@@ -131,7 +132,7 @@
               />
             </div>
 
-            <div class="col-1">
+            <div class="col-md-1 col-12">
               <q-checkbox label="Status" v-model="exam.status" />
             </div>
 
@@ -224,7 +225,6 @@
                           v-if="question.alternatives.length > 0"
                           bordered
                           separator
-                          class="rounded-borders"
                         >
                           <q-item
                             v-for="(alternative, index) in question.alternatives"
@@ -232,7 +232,7 @@
                             :id="`item-${index}`"
                           >
                             <div class="row col-12 items-center">
-                              <div class="row col-10">
+                              <div class="row col-md-10 col-12">
                                 <q-input
                                   outlined
                                   dense
@@ -247,7 +247,7 @@
                                 />
                               </div>
 
-                              <div class="row col-2">
+                              <div class="row col-md-2 col-12">
                                 <q-checkbox
                                   :disable="
                                     question.alternatives.filter((element) => (element.isCorrect === true)).length > 0 && !alternative.isCorrect"

@@ -13,10 +13,10 @@
         :filter="filter"
       >
         <template v-slot:top="props">
-          <div class="col-6 q-table__title">Alunos</div>
+          <div class="col-md-6 col-12 q-table__title">Alunos</div>
 
-          <div class="col-6 row q-col-gutter-sm">
-            <div class="row col-6">
+          <div class="col-md-6 col-12 row q-col-gutter-sm">
+            <div class="row col-md-6 col-12">
               <q-input
                 outlined
                 dense
@@ -36,7 +36,7 @@
               </q-input>
             </div>
 
-            <div class="row col-4">
+            <div class="row col-md-4 col-10">
               <q-btn
                 class="col-12"
                 outline
@@ -84,9 +84,11 @@
     <q-dialog v-model="dialogStudent" persistent>
       <q-card class="row">
         <q-card-section class="row col-12">
-          <div class="text-h6">{{student.id ? 'Deseja atualizar as informações?' : 'Cadastrando Aluno'}}</div>
+          <div class="col-10 text-h6">{{student.id ? 'Deseja atualizar as informações?' : 'Cadastrando Aluno'}}</div>
           <q-space />
-          <q-btn icon="close" color="secondary" flat round dense v-close-popup />
+          <div class="col-2">
+            <q-btn icon="close" color="secondary" flat round dense v-close-popup />
+          </div>
         </q-card-section>
 
         <q-card-section class="col-12 q-pt-none">
@@ -95,7 +97,7 @@
             greedy
             ref="formStudent"
           >
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <q-input
                 outlined
                 dense
@@ -109,7 +111,7 @@
 
             </div>
 
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <q-input
                 outlined
                 dense
