@@ -96,20 +96,7 @@
               <q-icon name="fab fa-github" />
             </q-item-section>
 
-            <q-item-section>GitHub - PAHJunior</q-item-section>
-          </q-item>
-
-          <q-item
-            clickable
-            v-ripple
-            active-class="bg-primary text-white"
-            @click="openPage('https://github.com/PAHJunior/')"
-          >
-            <q-item-section avatar>
-              <q-icon name="fab fa-github" />
-            </q-item-section>
-
-            <q-item-section>GitHub - Faculdade UMT</q-item-section>
+            <q-item-section>GitHub</q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>

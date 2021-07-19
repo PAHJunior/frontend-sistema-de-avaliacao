@@ -2,7 +2,7 @@ import axios from 'axios'
 import { LocalStorage, Dialog, Notify } from 'quasar'
 
 export const http = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://faculdade-umt.herokuapp.com/api',
   timeout: 60000
 })
 
