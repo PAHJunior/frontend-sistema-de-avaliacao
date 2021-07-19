@@ -58,14 +58,15 @@
 
       <q-card-section class="col-12 q-pt-none">
         <q-form
-          @submit="onSubmit"
-          @reset="onReset"
           class="q-gutter-md"
+          greedy
+          ref="formTeacher"
         >
           <q-input
             outlined
             v-model="teacher.email"
             label="Seu e-mail"
+            dense
             hide-bottom-space
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Por favor informe seu e-mail']"
@@ -76,6 +77,7 @@
             :type="isTeacherPassword ? 'password' : 'text'"
             v-model="teacher.password"
             label="Sua senha"
+            dense
             hide-bottom-space
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Por favor informe sua senha']"
@@ -116,14 +118,15 @@
 
       <q-card-section class="col-12 q-pt-none">
         <q-form
-          @submit="onSubmit"
-          @reset="onReset"
           class="q-gutter-md"
+          greedy
+          ref="formStudent"
         >
           <q-input
             outlined
-            v-model="student.ra"
+            v-model="student.studentRecord"
             label="Informe seu RA"
+            dense
             hide-bottom-space
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Por favor informe seu RA']"
@@ -134,6 +137,7 @@
             :type="isStudentPassword ? 'password' : 'text'"
             v-model="student.password"
             label="Sua senha"
+            dense
             hide-bottom-space
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Por favor informe sua senha']"
@@ -154,7 +158,7 @@
           flat
           label="Entrar"
           color="primary"
-          v-close-popup
+          @click="loginStudent"
         />
       </q-card-actions>
     </q-card>
@@ -163,24 +167,53 @@
 </template>
 
 <script>
+import Authentification from '../services/Authentification'
+import { LocalStorage } from 'quasar'
 export default {
+  mounted () {
+    LocalStorage.set('teacher', {})
+    LocalStorage.set('token', '')
+  },
   methods: {
     loginTeacher () {
-      this.$router.push('/college')
+      this.$refs.formTeacher.validate()
+        .then((success) => {
+          if (success) {
+            Authentification.loginTeacher(this.teacher)
+              .then((result) => {
+                LocalStorage.set('teacher', result.data.teacher)
+                LocalStorage.set('token', result.data.token)
+                this.$router.push('/college/dashboard')
+              })
+          }
+        })
+    },
+    loginStudent () {
+      this.$refs.formStudent.validate()
+        .then((success) => {
+          if (success) {
+            Authentification.loginStudent(this.student)
+              .then((result) => {
+                LocalStorage.set('student', result.data.student)
+                LocalStorage.set('token', result.data.token)
+                this.$router.push('/student/dashboard')
+              })
+          }
+        })
     }
   },
   data () {
     return {
       dialogLoginTeacher: false,
       dialogLoginStudent: false,
-      isTeacherPassword: false,
+      isTeacherPassword: true,
       teacher: {
         email: '',
         password: ''
       },
-      isStudentPassword: false,
+      isStudentPassword: true,
       student: {
-        ra: '',
+        studentRecord: '',
         password: ''
       }
     }

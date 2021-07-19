@@ -11,13 +11,57 @@ const routes = [
   },
   {
     path: '/college',
-    name: 'Teacher',
+    name: 'College',
+    meta: { title: 'College - UMT' },
     component: () => import('../layouts/College.vue'),
     children: [
-      { path: 'subjects', component: () => import('../views/Subjects.vue') },
-      { path: 'teachers', component: () => import('../views/Teachers.vue') },
-      { path: 'students', component: () => import('../views/Students.vue') },
-      { path: 'exams', component: () => import('../views/Exams.vue') }
+      {
+        path: 'dashboard',
+        component: () => import('../views/teacher/Dashboard.vue'),
+        meta: {
+          title: 'Dashboard',
+          titleTemplate: title => `${title} - UMT`
+        }
+      },
+      {
+        path: 'subjects',
+        component: () => import('../views/teacher/Subjects.vue'),
+        meta: {
+          title: 'Subjects',
+          titleTemplate: title => `${title} - UMT`
+        }
+      },
+      {
+        path: 'teachers',
+        component: () => import('../views/teacher/Teachers.vue'),
+        meta: { title: 'Teachers - UMT' }
+      },
+      {
+        path: 'students',
+        component: () => import('../views/teacher/Students.vue'),
+        meta: { title: 'Students - UMT' }
+      },
+      {
+        path: 'exams',
+        component: () => import('../views/teacher/Exams.vue'),
+        meta: { title: 'Exams - UMT' }
+      }
+    ]
+  },
+  {
+    path: '/student',
+    name: 'Student',
+    meta: { title: 'Student - UMT' },
+    component: () => import('../layouts/Student.vue'),
+    children: [
+      {
+        path: 'dashboard',
+        component: () => import('../views/student/Dashboard.vue'),
+        meta: {
+          title: 'Dashboard',
+          titleTemplate: title => `${title} - UMT`
+        }
+      }
     ]
   }
 ]

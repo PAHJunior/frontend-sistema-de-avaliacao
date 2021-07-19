@@ -6,6 +6,7 @@
         :data="data"
         :columns="columns"
         dense
+        :loading="loadingTableTeachers"
         rows-per-page-label="Registros por página"
         row-key="title"
         :pagination="{rowsPerPage: 15}"
@@ -14,30 +15,48 @@
         <template v-slot:top="props">
           <div class="col-6 q-table__title">Professores</div>
 
-          <div class="col-6 row justify-end">
-            <q-input
-              outlined
-              dense
-              class="col-10"
-              debounce="300"
-              v-model="filter"
-              placeholder="Pesquisar">
-              <template v-slot:append>
-                <q-btn
-                  flat
-                  dense
-                  @click="getAllTeachers"
-                  icon="search"
-                  />
-              </template>
-            </q-input>
+          <div class="col-6 row justify-end q-col-gutter-sm">
 
-            <q-btn
-              class="col-2"
-              flat round dense
-              :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
-              @click="props.toggleFullscreen"
-            />
+            <div class="row col-6">
+              <q-input
+                outlined
+                dense
+                class="col-12"
+                debounce="300"
+                v-model="filter"
+                placeholder="Pesquisar">
+                <template v-slot:append>
+                  <q-btn
+                    flat
+                    dense
+                    @click="getAllTeachers"
+                    icon="search"
+                    />
+                </template>
+              </q-input>
+            </div>
+
+            <div class="row col-4">
+              <q-btn
+                class="col-12"
+                outline
+                dense
+                color="secondary"
+                label="Novo cadastro"
+                @click="openDialogTeacher"
+              />
+            </div>
+
+            <div class="row col-2">
+              <q-btn
+                class="col-12"
+                flat
+                round
+                dense
+                :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+                @click="props.toggleFullscreen"
+              />
+            </div>
           </div>
         </template>
 
@@ -45,7 +64,7 @@
           <q-tr
             :props="props"
             :class="props.row.statusView === 'Inativo' ? 'bg-red-2' : ''"
-            @click="getLine(props.row)"
+            @click="openDialogTeacher(props.row)"
           >
             <q-td
               v-for="(coluna) in columns"
@@ -67,19 +86,28 @@
         <q-card-section class="row col-12">
           <div class="text-h6">{{teacher.id ? 'Deseja atualizar as informações?' : 'Cadastrando professor'}}</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            color="secondary"
+            v-close-popup />
         </q-card-section>
 
         <q-card-section class="col-12 q-pt-none">
           <q-form
             class="row q-col-gutter-sm"
+            greedy
+            ref="formTeacher"
           >
             <div class="col-6">
               <q-input
                 outlined
                 dense
                 v-model="teacher.name"
-                label="Informe seu nome"
+                ref="teacherName"
+                label="Informe seu nome *"
                 hide-bottom-space
                 lazy-rules
                 :rules="[ val => val && val.length > 0 || 'Por favor informe seu nome']"
@@ -92,16 +120,32 @@
                 outlined
                 dense
                 v-model="teacher.email"
-                label="Informe seu e-mail"
+                ref="teacherEmail"
+                label="Informe seu e-mail *"
+                type="email"
                 hide-bottom-space
                 lazy-rules
-                :rules="[ val => val && val.length > 0 || 'Por favor informe seu e-mail']"
+                :rules="[isEmailValid]"
+              />
+            </div>
+
+            <div class="col-12" v-if="!teacher.id">
+              <q-input
+                outlined
+                dense
+                v-model="teacher.password"
+                ref="teacherPassword"
+                label="Senha para acesso *"
+                type="password"
+                hide-bottom-space
+                lazy-rules
+                :rules="[ val => val && val.length > 0 || 'Por favor informe a senha']"
               />
             </div>
 
             <div class="col-12">
               <q-select
-                label="Informe as disciplinas"
+                label="Informe as Materias"
                 outlined
                 dense
                 v-model="teacher.subjects"
@@ -111,7 +155,7 @@
                 multiple
                 input-debounce="0"
                 new-value-mode="add-unique"
-                hint="Precione enter para cadastrar a disciplina"
+                hint="Precione enter para cadastrar uma nova materia"
               />
             </div>
 
@@ -142,8 +186,9 @@
 </template>
 
 <script>
-import Teachers from '../services/Teachers'
-import Subjects from '../services/Subjects'
+import Teachers from '../../services/Teachers'
+import Subjects from '../../services/Subjects'
+import Validation from '../../utils/validation'
 import { Notify } from 'quasar'
 
 export default {
@@ -151,7 +196,11 @@ export default {
     this.getAllTeachers()
   },
   methods: {
+    isEmailValid (val) {
+      return Validation.isEmail(val) || 'Por favor, informe um e-mail valido'
+    },
     getAllTeachers () {
+      this.loadingTableTeachers = true
       Teachers.getAllTeachers()
         .then((result) => {
           this.data = result.data.teachers.map((teacher) => ({
@@ -165,38 +214,59 @@ export default {
           }))
         })
         .finally(() => {
-
+          this.loadingTableTeachers = false
+        })
+    },
+    createTeacher () {
+      this.$refs.formTeacher.validate()
+        .then(success => {
+          if (success) {
+            Teachers.createTeacher(this.teacher)
+              .then((result) => {
+                Notify.create({
+                  color: 'secondary',
+                  message: 'Professor cadastrado com sucesso',
+                  icon: 'thumb_up_alt'
+                })
+              })
+              .finally(() => {
+                this.getAllTeachers()
+                this.dialogTeacher = false
+              })
+          }
         })
     },
     updateTeacher () {
-      Teachers.updateTeacher(this.teacher.id, this.teacher)
-        .then((result) => {
-          Notify.create({
-            progress: true,
-            color: 'positive',
-            message: 'Dados atualizados com sucesso',
-            icon: 'thumb_up_alt',
-            actions: [{
-              color: 'white',
-              icon: 'close'
-            }]
-          })
+      this.$refs.formTeacher.validate()
+        .then((success) => {
+          if (success) {
+            Teachers.updateTeacher(this.teacher.id, this.teacher)
+              .then((result) => {
+                Notify.create({
+                  progress: true,
+                  color: 'secondary',
+                  message: 'Dados atualizados com sucesso',
+                  icon: 'thumb_up_alt'
+                })
 
-          this.dialogTeacher = false
-        })
-        .finally(() => {
-          this.getAllTeachers()
+                this.dialogTeacher = false
+              })
+              .finally(() => {
+                this.getAllTeachers()
+                this.dialogTeacher = false
+              })
+          }
         })
     },
-    getLine (teacher) {
+    openDialogTeacher ({ id, name, email, status, subjects }) {
       this.getAllSubjects()
 
       this.teacher = {
-        id: teacher.id,
-        name: teacher.name,
-        email: teacher.email,
-        status: teacher.status,
-        subjects: teacher.subjects
+        id: id,
+        name: name || '',
+        email: email || '',
+        status: status || true,
+        subjects: subjects || []
       }
 
       this.dialogTeacher = true
@@ -214,12 +284,14 @@ export default {
   name: 'Teachers',
   data () {
     return {
+      loadingTableTeachers: false,
       dialogTeacher: false,
       filter: '',
       teacher: {
         id: null,
         name: '',
         email: '',
+        password: '',
         status: true,
         subjects: []
       },
@@ -243,7 +315,7 @@ export default {
         {
           name: 'subjectsLength',
           align: 'center',
-          label: 'Disciplinas',
+          label: 'Materias',
           field: 'subjectsLength',
           sortable: true
         },

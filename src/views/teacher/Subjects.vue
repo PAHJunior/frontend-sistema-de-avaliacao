@@ -5,6 +5,7 @@
         table-header-class="text-secondary"
         :data="data"
         :columns="columns"
+        :loading="loadingTableSubjects"
         dense
         rows-per-page-label="Registros por página"
         row-key="title"
@@ -12,27 +13,50 @@
         :filter="filter"
       >
         <template v-slot:top="props">
-          <div class="col-6 q-table__title">Disciplinas</div>
+          <div class="col-6 q-table__title">Materias</div>
 
-          <div class="col-6 row justify-end">
-            <q-input
-              outlined
-              dense
-              class="col-10"
-              debounce="300"
-              v-model="filter"
-              placeholder="Pesquisar">
-              <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
+          <div class="col-6 row q-col-gutter-sm">
 
-            <q-btn
-              class="col-2"
-              flat round dense
-              :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
-              @click="props.toggleFullscreen"
-            />
+            <div class="row col-6">
+              <q-input
+                outlined
+                dense
+                class="col-12"
+                debounce="300"
+                v-model="filter"
+                placeholder="Pesquisar">
+                <template v-slot:append>
+                  <q-btn
+                    flat
+                    dense
+                    @click="getAllSubjects"
+                    icon="search"
+                    />
+                </template>
+              </q-input>
+            </div>
+
+            <div class="row col-4">
+              <q-btn
+                class="col-12"
+                outline
+                dense
+                color="secondary"
+                label="Novo cadastro"
+                @click="openDialogSubject"
+              />
+            </div>
+
+            <div class="row col-2">
+              <q-btn
+                class="col-12"
+                flat
+                round
+                dense
+                :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+                @click="props.toggleFullscreen"
+              />
+            </div>
           </div>
         </template>
 
@@ -40,7 +64,7 @@
           <q-tr
             :props="props"
             :class="props.row.statusView === 'Inativo' ? 'bg-red-2' : ''"
-            @click="getLine(props.row)"
+            @click="openDialogSubject(props.row)"
           >
             <q-td
               v-for="(coluna) in columns"
@@ -62,22 +86,31 @@
         <q-card-section class="row col-12">
           <div class="text-h6">{{subject.id ? 'Deseja atualizar as informações?' : 'Cadastrando professor'}}</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn
+            icon="close"
+            color="secondary"
+            flat
+            round
+            dense
+            v-close-popup />
         </q-card-section>
 
         <q-card-section class="col-12 q-pt-none">
           <q-form
+            ref="formSubject"
+            greedy
             class="row q-col-gutter-sm"
           >
             <div class="col-9">
               <q-input
                 outlined
+                ref="subjectTitle"
                 dense
                 v-model="subject.title"
-                label="Informe o titulo da disciplina"
+                label="Informe o titulo da materia"
                 hide-bottom-space
                 lazy-rules
-                :rules="[ val => val && val.length > 0 || 'Por favor informe seu nome']"
+                :rules="[ val => val && val.length > 0 || 'Por favor informe o nome da materia']"
               />
             </div>
 
@@ -108,7 +141,7 @@
 </template>
 
 <script>
-import Subjects from '../services/Subjects'
+import Subjects from '../../services/Subjects'
 import { Notify } from 'quasar'
 
 export default {
@@ -116,7 +149,27 @@ export default {
     this.getAllSubjects()
   },
   methods: {
+    createSubject () {
+      this.$refs.formSubject.validate()
+        .then(success => {
+          if (success) {
+            Subjects.createSubject(this.subject)
+              .then((result) => {
+                Notify.create({
+                  color: 'secondary',
+                  message: 'Materia cadastrada com sucesso',
+                  icon: 'thumb_up_alt'
+                })
+              })
+              .finally(() => {
+                this.getAllSubjects()
+                this.dialogSubject = false
+              })
+          }
+        })
+    },
     getAllSubjects () {
+      this.loadingTableSubjects = true
       Subjects.getAllSubjects()
         .then((result) => {
           this.data = result.data.subjects.map((subject) => ({
@@ -126,30 +179,37 @@ export default {
             status: subject.status
           }))
         })
+        .finally(() => {
+          this.loadingTableSubjects = false
+        })
     },
     updateSubject () {
-      Subjects.updateSubject(this.subject.id, this.subject)
-        .then((result) => {
-          Notify.create({
-            progress: true,
-            color: 'positive',
-            message: 'Dados atualizados com sucesso',
-            icon: 'thumb_up_alt',
-            actions: [{
-              color: 'white',
-              icon: 'close'
-            }]
-          })
-        })
-        .finally(() => {
-          this.getAllSubjects()
+      this.$refs.formSubject.validate()
+        .then(success => {
+          if (success) {
+            Subjects.updateSubject(this.subject.id, this.subject)
+              .then((result) => {
+                Notify.create({
+                  progress: true,
+                  color: 'secondary',
+                  message: 'Dados atualizados com sucesso',
+                  icon: 'thumb_up_alt'
+                })
+              })
+              .finally(() => {
+                this.getAllSubjects()
+                this.dialogSubject = false
+              })
+          }
         })
     },
-    getLine (subject) {
+    openDialogSubject ({ id, title, status }) {
+      this.getAllSubjects()
+
       this.subject = {
-        id: subject.id,
-        title: subject.title,
-        status: subject.status
+        id: id,
+        title: title || '',
+        status: status || true
       }
 
       this.dialogSubject = true
@@ -158,6 +218,7 @@ export default {
   name: 'Subjects',
   data () {
     return {
+      loadingTableSubjects: false,
       filter: '',
       dialogSubject: false,
       subject: {
