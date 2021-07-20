@@ -197,7 +197,7 @@
 
                     <div class="row">
                       <q-btn
-                        :disable="question.alternatives.length === 4"
+                        :disable="question.alternatives.length === 5"
                         label="Adicionar alternativas"
                         color="primary"
                         flat
